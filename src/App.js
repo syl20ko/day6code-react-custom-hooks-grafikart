@@ -71,22 +71,40 @@ function App() {
   );
 }
 
-function CommentTable() {
-  const [comments, setComments] = useState([]);
+/* Fetch Hook */
+function useFetch(url) {
+  const [state, setState] = useState({
+    items: [],
+    loading: true,
+  });
 
   useEffect(function () {
     (async function () {
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/comments?_limit=3"
-      );
+      const response = await fetch(url);
       const responseData = await response.json();
       if (response.ok) {
-        setComments(responseData);
+        setState({ items: responseData, loading: false });
       } else {
         alert(JSON.stringify(responseData));
+        setState({
+          items: [],
+          loading: false
+        })
       }
     })();
   });
+
+  return [state.loading, state.items];
+}
+
+/* Comment function with hook*/
+function CommentTable() {
+  const [loading, items] = useFetch("https://jsonplaceholder.typicode.com/comments?_limit=5");
+
+
+  if (loading) {
+    return 'Chargement...'
+  }
 
   return (
     <table>
@@ -98,11 +116,11 @@ function CommentTable() {
         </tr>
       </thead>
       <tbody>
-        {comments.map((c) => (
-          <tr key={c.id}>
-            <td>{c.name}</td>
-            <td>{c.email}</td>
-            <td>{c.body}</td>
+        {items.map((item) => (
+          <tr key={item.id}>
+            <td>{item.name}</td>
+            <td>{item.email}</td>
+            <td>{item.body}</td>
           </tr>
         ))}
       </tbody>
@@ -110,33 +128,19 @@ function CommentTable() {
   );
 }
 
+/* Todos function with hook*/
 function TodoList() {
-  const [todos, setTodos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, todos] = useFetch("https://jsonplaceholder.typicode.com/comments?_limit=5");
 
-  useEffect(function () {
-    (async function () {
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/todos?_limit=5"
-      );
-      const responseData = await response.json();
-      if (response.ok) {
-        setTodos(responseData);
-      } else {
-        alert(JSON.stringify(responseData));
-      }
-      setLoading(false);
-    })();
-  });
 
   if (loading) {
-    return "Chargement...";
+    return 'Chargement...'
   }
 
   return (
     <ul>
-      {todos.map((t) => (
-        <li key={t.id}>{t.title}</li>
+      {todos.map((item) => (
+        <li key={item.id}>{item.name}</li>
       ))}
     </ul>
   );
